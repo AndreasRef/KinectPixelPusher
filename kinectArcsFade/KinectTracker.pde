@@ -110,7 +110,7 @@ class KinectTracker {
     lerpedClosestLoc.x = PApplet.lerp(lerpedClosestLoc.x, closestLoc.x, 0.03f);
     lerpedClosestLoc.y = PApplet.lerp(lerpedClosestLoc.y, closestLoc.y, 0.03f);
 
-    println(worldRecordClosest);
+    //println(worldRecordClosest);
   }
 
 

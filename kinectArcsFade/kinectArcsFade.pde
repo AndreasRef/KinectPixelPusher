@@ -1,21 +1,16 @@
-/*First working lofi-prototype 
- 
+/* 
  Works by measuring the distance between the kinect and the closest point 
- within a defined area of interest
- 
- Attemt to implement fading in the arcs 
- 
+ within a defined area of interest. Whole sides of the arc fade in and out accordingly.
  */
 
+//Clean out average point in KinectTracker if you are not gonna use it...
 
-//PixelPusher_archControl_simple
 import com.heroicrobot.dropbit.registry.*;
 import com.heroicrobot.dropbit.devices.pixelpusher.Pixel;
 import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
 import java.util.*;
 
 DeviceRegistry registry;
-
 
 class TestObserver implements Observer {
   public boolean hasStrips = false;
@@ -40,10 +35,9 @@ import org.openkinect.processing.*;
 KinectTracker tracker;
 Kinect kinect;
 
-int colOffset = 190;
+int colOffset = 200;
 int rowOffsetBottom = 220;
 int rowOffsetTop = 20;
-
 
 //Global variables for the pixelPusher
 int sidesPerStrip = 3;
@@ -57,14 +51,12 @@ int brightness[] = new int[stripNumbers*pixelsPerStrip];
 
 int currentPixel = 0;
 
-
 void setup() {
   size(640, 580);
 
   registry = new DeviceRegistry();
   testObserver = new TestObserver();
   registry.addObserver(testObserver);
-
 
   kinect = new Kinect(this);
   tracker = new KinectTracker();
@@ -88,6 +80,8 @@ void draw() {
   tracker.display();
 
 
+  pushStyle();
+  colorMode(RGB, 255);
   // Let's draw the raw location
   PVector v1 = tracker.getPos();
   fill(50, 100, 250, 200);
@@ -119,12 +113,12 @@ void draw() {
   // Display some info
   int t = tracker.getThreshold();
   fill(0);
+  textSize(12);
   text("threshold: " + t + "    " +  "framerate: " + int(frameRate) + "    " + 
     "UP increase threshold, DOWN decrease threshold", 10, 500);
   text("*COLORS* \n Red: Closest Point - Magenta: Closest Point Lerped - Green: Average Point - Blue: Average Point Lerped ", 10, 530);
 
   //Draw lines that define Area Of Interest
-  pushStyle();
   stroke(255, 0, 0);
   strokeWeight(5);
   line(colOffset, 0, colOffset, height);
@@ -139,11 +133,14 @@ void draw() {
   text(tracker.lerpedWorldRecordClosest, width/2, height/2);
   text(lightStates(), width/2, height/2 + 100);
   //lightStates
+
+  text(tracker.lerpedClosestLoc.x, width/2, height/2 -100);
+  text(sidesStates(), width/2, height/2 -200);
+
   popStyle();
 
-
-  int activeStrip = int(map(mouseX, 0, width, 5, -1));
-  text(activeStrip, width/2, height/2);
+  //int activeStrip = int(map(mouseX, 0, width, 5, -1));
+  //text(activeStrip, width/2, height/2 - 100);
 
   if (testObserver.hasStrips) {
     registry.startPushing();
@@ -151,20 +148,34 @@ void draw() {
     registry.setAntiLog(true);
     strips = registry.getStrips();
 
-    color orange = color(255, 122, 0);
-    color grey = color(20, 20, 20);
-    
+
+    //Whole Strips
     for (int i = 0; i<strips.size(); i++) {
-     if (lightStates() == i) { //Fade in selected strip
-       for (int j=pixelsPerStrip*i; j<pixelsPerStrip*(i+1); j++) {
-         fadePixel(j, color(#FF7A00), true, 10, 5);
-       }
-     } else { //Fade out all others
-       for (int j=pixelsPerStrip*i; j<pixelsPerStrip*(i+1); j++) {
-         fadePixel(j, color(#FF7A00), false, 5, 5);
-       }
-     }
-    }    
+      if (lightStates() == i) { //Fade in selected strip
+        for (int j=pixelsPerStrip*i; j<pixelsPerStrip*(i+1); j++) {
+          fadePixel(j, color(#6ADDFF), true, 10, 5);
+        }
+      } else { //Fade out all others
+        for (int j=pixelsPerStrip*i; j<pixelsPerStrip*(i+1); j++) {
+          fadePixel(j, color(#6ADDFF), false, 5, 5);
+        }
+      }
+    }
+
+    //Single Sides
+    //int selectedSide = floor(map(mouseX, 0, width, 0, 6*3));
+    int selectedSide = lightStates()*sidesPerStrip+sidesStates();
+    for (int i = 0; i<strips.size()*sidesPerStrip; i++) {
+      if (selectedSide == i) { //Fade in selected strip
+        for (int j=pixelsPerSide*i; j<pixelsPerSide*(i+1); j++) {
+          //fadePixel(j, color(#6ADDFF), true, 20, 10);
+        }
+      } else { //Fade out all others
+        for (int j=pixelsPerSide*i; j<pixelsPerSide*(i+1); j++) {
+          //fadePixel(j, color(#6ADDFF), false, 5, 10);
+        }
+      }
+    }
   }
 }
 
@@ -207,15 +218,27 @@ int lightStates() {
   return currentState;
 }
 
+int sidesStates() {
+  int currentState = 4;
+
+  if (tracker.lerpedClosestLoc.x < 270) {
+    currentState = 0;
+  } else if (tracker.lerpedClosestLoc.x < 350) {
+    currentState = 1;
+  } else {
+    currentState = 2;
+  }
+  return currentState;
+}
 
 void fadePixel(int pixel, color c, boolean inOut, int fadeSpeed, int threshold) { 
   int strip = floor(pixel/(pixelsPerStrip));
   int pixelNum = pixel % (pixelsPerStrip);
 
-  if (inOut == true) {
+  if (inOut == true) { //Color fades in
     brightness[pixel]+=fadeSpeed;
     if (brightness[pixel] >= 360) brightness[pixel] = 360;
-  } else if (inOut ==false) {
+  } else if (inOut ==false) { //Color fades out
     brightness[pixel]-=fadeSpeed;
     if (brightness[pixel] <= threshold) brightness[pixel] = threshold;
   }
