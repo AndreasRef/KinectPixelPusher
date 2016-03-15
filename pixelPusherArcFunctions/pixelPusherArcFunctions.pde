@@ -1,7 +1,7 @@
 /*
-PixelPusher arch contol example by Andreas Refsgaard for Circus Family 2016
+PixelPusher arc control example by Andreas Refsgaard for Circus Family 2016
  
- Simple test for configurations where led-strips are connected in 6 arch formations 
+A set of functions for controlling led-strips which are connected in a formation of 6 arcs 
  
  ------------   
  |            | 
