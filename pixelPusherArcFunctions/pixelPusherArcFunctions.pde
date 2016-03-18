@@ -1,7 +1,7 @@
 /*
 PixelPusher arc control example by Andreas Refsgaard for Circus Family 2016
  
-A set of functions for controlling led-strips which are connected in a formation of 6 arcs 
+ A set of functions for controlling led-strips which are connected in a formation of 6 arcs 
  
  ------------   
  |            | 
@@ -34,7 +34,6 @@ A set of functions for controlling led-strips which are connected in a formation
  *Blink
  *Rainbow
  *A way of keeping track of the current state of the arc/side/pixel
- 
  */
 
 
@@ -132,9 +131,9 @@ void draw() {
     //}
 
     //Set background: Should not run continiously in the draw loop - can produce flickering... It is better to integrate this in the functions where you also turn on stuff 
-    //for (int i = 0; i<strips.size(); i++) {
-    //pushStrip(i, color(10));
-    //}
+    for (int i = 0; i<strips.size(); i++) {
+      //pushStrip(i, color(10));
+    }
 
     //Push single pixels and turn off all other pixels
     //color pixelColor = color(int(map(currentPixel, 0, pixelsPerStrip*strips.size(), 0, 360)), 360, 360);
@@ -191,10 +190,10 @@ void draw() {
     //    }
     //  }
     //}
-    
-    
-    
-     //Fade in the selected SIDES and fade out all other SIDES...
+
+
+
+    //Fade in the selected SIDES and fade out all other SIDES...
     int selectedSide = floor(map(mouseX, 0, width, 0, 6*3));
     for (int i = 0; i<strips.size()*sidesPerStrip; i++) {
       if (selectedSide == i) { //Fade in selected strip
@@ -203,12 +202,16 @@ void draw() {
         }
       } else { //Fade out all others
         for (int j=pixelsPerSide*i; j<pixelsPerSide*(i+1); j++) {
-          fadePixel(j, color(#6ADDFF), false, 5,10);
+          fadePixel(j, color(#6ADDFF), false, 5, 10);
         }
       }
     }
-    
-    
+
+    //fadeSides() function: fadeSide(int strip, int side, color c, boolean inOut, int fadeSpeed, int threshold) {
+   // if (mousePressed) fadeSide(0, 1, color(#FF7A00), true, 1, 10);
+    //if (keyPressed) fadeSide(0, 1, color(#FF7A00), false, 1, 0);
+
+
     ////////END OF EXAMPLES///////////////
   }
 }
@@ -227,12 +230,24 @@ void fadePixel(int pixel, color c, boolean inOut, int fadeSpeed, int threshold) 
     brightness[pixel]-=fadeSpeed;
     if (brightness[pixel] <= threshold) brightness[pixel] = threshold;
   }
-
-  for (int i = 0; i<strips.size(); i++) {
     strips.get(strip).setPixel(color(hue(c), 360, brightness[pixel]), pixelNum);
-  }
 }
 
+
+void fadeSide(int strip, int side, color c, boolean inOut, int fadeSpeed, int threshold) {
+  for (int i = 0; i<strips.size(); i++) {
+    for (int stripx = side*pixelsPerSide; stripx < (side+1)*pixelsPerSide; stripx++) {
+      if (inOut == true) {
+        brightness[stripx]+=fadeSpeed;
+        if (brightness[stripx] >= 360) brightness[stripx] = 360;
+      } else if (inOut ==false) {
+        brightness[stripx]-=fadeSpeed;
+        if (brightness[stripx] <= threshold) brightness[stripx] = threshold;
+      }
+      strips.get(strip).setPixel(color(hue(c), 360, brightness[stripx]), stripx);
+    }
+  }
+}
 
 void pushStrip(int strip, color c) {
   for (int i = 0; i<strips.size(); i++) {
@@ -261,11 +276,11 @@ void pushPixel(int pixel, color c) {
 
 void keyPressed() {
   for (int i = 0; i<strips.size(); i++) {
-    pushStrip(i, color(10));
+    //pushStrip(i, color(10));
   } 
   for (int i = 0; i <72*6; i++) {
-    hue[i] = i;
-    saturation[i] = 0;
-    brightness[i]= 0;
+    //hue[i] = i;
+    //saturation[i] = 0;
+    //brightness[i]= 0;
   }
 }
