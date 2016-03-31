@@ -1,5 +1,5 @@
 //A tool that combines 2 Kinect depth images with blob detection to control LED's via the PixelPusher //<>//
-//Update 30/3: The sides are inverted which needs to be fixed!!
+//Update 31/3: Fixed inverted sides. Added Screenshot + PixelPusher GUI. Fading doesn't work!!
 
 import org.openkinect.freenect.*;
 import org.openkinect.processing.*;
@@ -68,20 +68,27 @@ int maxDepth = 914;
 boolean positiveNegative = true;
 boolean showBlobs = false;
 boolean showEdges = true;
-boolean showInformation = false;
+boolean showInfo = false;
 float luminosityThreshold = 0.7;
 float minimumBlobSize = 100;
 int blurFactor = 6;
 boolean mirror = true;
 boolean rgbView = false;
+boolean switchOrder = false;
 
 int cropAmount = 9;
 
-int kinect0X;
-int kinect0Y;
-int kinect1X;
-int kinect1Y;
+int kinect0X, kinect0Y, kinect1X, kinect1Y;
 
+int c1H = 255;
+int c1S = 255;
+int c1B = 255;
+int c2H = 255;
+int c2S = 255;
+int c2B = 255;
+int c3H = 255;
+int c3S = 255;
+int c3B = 255;
 
 
 //Buttons
@@ -165,22 +172,30 @@ void draw() {
     //Small hack for removing strange black bars in the left side of the depth images (might not be necessary for other setups)...
     //int cropAmount = 9;
     PImage croppedDepthImage = depthImg.get(cropAmount, 0, depthImg.width-cropAmount, depthImg.height);
-    if (i==0) {
-      pg.image(croppedDepthImage, croppedDepthImage.width*i+kinect0X, kinect0Y, croppedDepthImage.width, 480); //Be aware that this results in some empty (black) pixels all the way to the left
-    } else if (i==1) {
-      pg.image(croppedDepthImage, croppedDepthImage.width*i+kinect1X, kinect1Y, croppedDepthImage.width, 480); //Be aware that this results in some empty (black) pixels all the way to the left
+
+    if (switchOrder) {
+      if (i==0) {
+        pg.image(croppedDepthImage, croppedDepthImage.width*(1-i)+kinect0X, kinect0Y, croppedDepthImage.width, 480); //Be aware that this results in some empty (black) pixels all the way to the left
+      } else if (i==1) {
+        pg.image(croppedDepthImage, croppedDepthImage.width*(1-i)+kinect1X, kinect1Y, croppedDepthImage.width, 480); //Be aware that this results in some empty (black) pixels all the way to the left
+      }
+    } else if (switchOrder == false) {
+      if (i==0) {
+        pg.image(croppedDepthImage, croppedDepthImage.width*i+kinect0X, kinect0Y, croppedDepthImage.width, 480); //Be aware that this results in some empty (black) pixels all the way to the left
+      } else if (i==1) {
+        pg.image(croppedDepthImage, croppedDepthImage.width*i+kinect1X, kinect1Y, croppedDepthImage.width, 480); //Be aware that this results in some empty (black) pixels all the way to the left
+      }
+      //pg.image(depthImg, 640*i, 0); //Full image without crop
     }
-    //pg.image(depthImg, 640*i, 0); //Full image without crop
   }
   pg.endDraw();
-
   image(pg, 0, 0);
 
 
   img.copy(pg, 0, 0, pg.width, pg.height, 0, 0, img.width, img.height);
   fastblur(img, blurFactor);
   theBlobDetection.computeBlobs(img.pixels);
-  drawBlobsAndEdges(showBlobs, showEdges, showInformation);
+  drawBlobsAndEdges(showBlobs, showEdges, showInfo);
   theBlobDetection.setThreshold(luminosityThreshold); 
   theBlobDetection.activeCustomFilter(this);
 
@@ -189,7 +204,12 @@ void draw() {
       pushStyle();
       tint(255, 150);
       Kinect tmpKinect = (Kinect)multiKinect.get(i);
-      image(tmpKinect.getVideoImage(), 640*i, 0);
+
+      if (switchOrder) {
+        image(tmpKinect.getVideoImage(), 640*(1-i), 0);
+      } else {
+        image(tmpKinect.getVideoImage(), 640*i, 0);
+      }
       popStyle();
     }
   }  
@@ -224,10 +244,29 @@ void draw() {
   textSize(16);
   textAlign(LEFT);
   text("BLOBS: " + theBlobDetection.getBlobNb(), 152, height-5);
+
+  colorMode(HSB, 255);
+  noStroke();
+  fill(c1H, c1S, c1B);
+  rect(3*width/5 + 2 + 10, programHeight + 30, 110, 20);
+
+  fill(c2H, c2S, c2B);
+  rect(3*width/5 + 2 + 135, programHeight + 30, 110, 20);
+
+  fill(c3H, c3S, c3B);
+  rect(3*width/5 + 2 + 260, programHeight + 30, 110, 20);
+
   popStyle();
 
-
   //PixelPusher test
+
+  pushStyle();
+  colorMode(HSB, 255);
+  colorOptions[0] = color(c1H, c1S, c1B);
+  colorOptions[1] = color(c2H, c2S, c2B);
+  colorOptions[2] = color(c3H, c3S, c3B);
+
+  popStyle();
 
   if (testObserver.hasStrips) {
     registry.startPushing();
@@ -236,17 +275,18 @@ void draw() {
     strips = registry.getStrips();
 
     //pushSide(1, 1, color(#050505)); //grey
-        for (Button button : buttons) {
-      //if (overControl == true) {
-        if (button.over) {
-          //pushSide(abs(5 - button.row), abs(2 - button.column), colorOptions[abs(2 - button.column)]); //Different colors
-          pushSide(button.row, button.column, colorOptions[button.column]);
-          //fadeSide(5 - button.row, 2 - button.column, colorOptions[2 - button.column], true, 1, 10);
-        }  else {
-          pushSide(button.row, button.column, color(#000000));
-          //pushSide(abs(5 - button.row), abs(2 - button.column), color(#000000)); //off
-          //fadeSide(5 - button.row, 2 - button.column, colorOptions[2 - button.column], false, 1, 5);
-        }
+    
+    //fadeSide(1,1, colorOptions[0], false, 10, 10);
+    
+    for (Button button : buttons) {
+      if (button.over) {
+        pushSide(button.row, 2 - button.column, colorOptions[button.column]); 
+        //fadeSide(button.row, button.column, colorOptions[button.column], true, 10, 10);
+      } else {
+        pushSide(button.row, 2 - button.column, color(#000000));
+        //pushSide(abs(5 - button.row), abs(2 - button.column), color(#000000)); //off
+        //fadeSide(button.row, button.column, colorOptions[button.column], false, 5, 5);
+      }
       //} else if (overControl == false) {
       //  if (button.state==1 && beatVal1 == button.row) {
       //    pushSide(5 - button.row, 2 - button.column, colorOptions[2 - button.column]); //Different colors
@@ -255,9 +295,7 @@ void draw() {
       //  } else {
       //    pushSide(5 - button.row, 2 - button.column, color(#000000)); //off
       //  }
-      }
+    }
     //}
-    
-    
   }
 }

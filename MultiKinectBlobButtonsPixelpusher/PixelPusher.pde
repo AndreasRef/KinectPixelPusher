@@ -1,8 +1,5 @@
 
 void pushSide(int strip, int side, color c) {
-
-  
-
   if (strip < stripNumbers && side < sidesPerStrip) {//Attempt to avoid ArrayIndexOutOfBoundsExceptions
     for (int i = 0; i<strips.size(); i++) {
       for (int stripx = side*pixelsPerSide; stripx < (side+1)*pixelsPerSide; stripx++) {
