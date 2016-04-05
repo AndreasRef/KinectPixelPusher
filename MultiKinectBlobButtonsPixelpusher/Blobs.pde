@@ -44,12 +44,13 @@ void drawBlobsAndEdges(boolean drawBlobs, boolean drawEdges, boolean blobInforma
         pushStyle();
         ellipseMode(CENTER);
         fill(0, 255, 0);
-        ellipse(b.xMin*width/1 + b.w*width/2, b.yMin*480 + b.h*480/2, 25, 25);
+        ellipse(b.xMin*width/1 + b.w*width/2, b.yMin*480 + b.h*480/2, 75, 75);
 
-        textSize(12);
+        textSize(50);
         textAlign(CENTER, CENTER);
         fill(255);
-        text("#" + n + "\n (" + round(b.xMin*width/1 + b.w*width/2) +"," + round(b.yMin*480 + b.h*480/2) + ")", b.xMin*width/1 + b.w*width/2, b.yMin*480 + b.h*480/2);
+        //text("#" + n + "\n (" + round(b.xMin*width/1 + b.w*width/2) +"," + round(b.yMin*480 + b.h*480/2) + ")", b.xMin*width/1 + b.w*width/2, b.yMin*480 + b.h*480/2);
+        text(n, b.xMin*width/1 + b.w*width/2, b.yMin*480 + b.h*480/2);
         popStyle();
       }
     }

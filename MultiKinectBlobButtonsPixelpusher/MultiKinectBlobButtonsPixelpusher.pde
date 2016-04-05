@@ -1,6 +1,15 @@
 //A tool that combines 2 Kinect depth images with blob detection to control LED's via the PixelPusher //<>//
 //Update 31/3: Fixed inverted sides. Added Screenshot + PixelPusher GUI. Fading doesn't work!!
 
+//Update 4/4: Added an index in the button class to make things easier, but actually not using it right now....??
+// Figured out fading using the fadePixel function. KinectImage is flipped (and is too heavy on the frameRate to flip in code) 
+// which is why I have a small hack using (2 - button.column)
+
+
+//Update 5/4: Autopress not working anymore? 
+//Experimenting with adding blobIndex to button class, so each person can have its own light...
+// blob ID depends on X-position, which means that the blobs switch place... Pretty annoing....
+
 import org.openkinect.freenect.*;
 import org.openkinect.processing.*;
 
@@ -90,6 +99,10 @@ int c3H = 255;
 int c3S = 255;
 int c3B = 255;
 
+int fadeInSpeed = 20;
+int fadeOutSpeed = 10;
+
+int autoPressTime = 1000;
 
 //Buttons
 int startX = 0;
@@ -220,7 +233,7 @@ void draw() {
     button.over=false;
 
     if (mouseControl) {
-      button.update(mouseX, mouseY);
+      button.update(mouseX, mouseY, 0); //blobIndex 0
     } else {
 
       Blob b;
@@ -228,7 +241,7 @@ void draw() {
       {
         b=theBlobDetection.getBlob(n);
 
-        button.update(b.xMin*width/1 + b.w*width/2, b.yMin*programHeight + b.h*programHeight/2);
+        button.update(b.xMin*width/1 + b.w*width/2, b.yMin*programHeight + b.h*programHeight/2, n);
       }
     }
     if (autoPress) button.autoPress();
@@ -275,27 +288,38 @@ void draw() {
     strips = registry.getStrips();
 
     //pushSide(1, 1, color(#050505)); //grey
-    
+
     //fadeSide(1,1, colorOptions[0], false, 10, 10);
+
+    pushStyle();
+    colorMode(HSB, 360);
     
+    //Fade in the selected SIDES and fade out all other SIDES using fadePixel function...
     for (Button button : buttons) {
-      if (button.over) {
-        pushSide(button.row, 2 - button.column, colorOptions[button.column]); 
-        //fadeSide(button.row, button.column, colorOptions[button.column], true, 10, 10);
-      } else {
-        pushSide(button.row, 2 - button.column, color(#000000));
-        //pushSide(abs(5 - button.row), abs(2 - button.column), color(#000000)); //off
-        //fadeSide(button.row, button.column, colorOptions[button.column], false, 5, 5);
+      //int selectedSide = button.index;
+      //if (button.over) {
+      for (int i = 0; i<strips.size()*sidesPerStrip; i++) {
+        if (2 - button.column + button.row*3 == i && button.over) { //Fade in selected strip
+          for (int j=pixelsPerSide*i; j<pixelsPerSide*(i+1); j++) {
+            //fadePixel(j, colorOptions[button.column], true, fadeInSpeed, 0);
+            fadePixel(j, colorOptions[button.blobIndex % 3], true, fadeInSpeed, 0); //Controlled by blob index
+          }
+        } else if (2 - button.column + button.row*3 == i) { //Fade out all others
+          for (int j=pixelsPerSide*i; j<pixelsPerSide*(i+1); j++) {
+            //fadePixel(j, colorOptions[button.column], false, fadeOutSpeed, 0);
+            fadePixel(j, colorOptions[button.blobIndex % 3], false, fadeOutSpeed, 0); //Controlled by blob index
+          }
+        }
       }
-      //} else if (overControl == false) {
-      //  if (button.state==1 && beatVal1 == button.row) {
-      //    pushSide(5 - button.row, 2 - button.column, colorOptions[2 - button.column]); //Different colors
-      //  } else if (beatVal1 == button.row) {
-      //    pushSide(5 - button.row, 2 - button.column, color(#050505)); //grey
-      //  } else {
-      //    pushSide(5 - button.row, 2 - button.column, color(#000000)); //off
-      //  }
-    }
-    //}
-  }
-}
+      }
+          popStyle();
+
+          for (Button button : buttons) {
+            if (button.over) {
+              //pushSide(button.row, 2 - button.column, colorOptions[button.column]); 
+            } else {
+              //pushSide(button.row, 2 - button.column, color(#000000));
+            } 
+          }
+        }
+      }

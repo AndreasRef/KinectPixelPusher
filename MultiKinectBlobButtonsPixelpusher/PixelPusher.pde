@@ -26,3 +26,17 @@ void fadeSide(int strip, int side, color c, boolean inOut, int fadeSpeed, int th
   }
   popStyle();
 }
+
+void fadePixel(int pixel, color c, boolean inOut, int fadeSpeed, int threshold) { 
+  int strip = floor(pixel/(pixelsPerStrip));
+  int pixelNum = pixel % (pixelsPerStrip);
+
+  if (inOut == true) {
+    brightness[pixel]+=fadeSpeed;
+    if (brightness[pixel] >= 360) brightness[pixel] = 360;
+  } else if (inOut ==false) {
+    brightness[pixel]-=fadeSpeed;
+    if (brightness[pixel] <= threshold) brightness[pixel] = threshold;
+  }
+    strips.get(strip).setPixel(color(hue(c), 360, brightness[pixel]), pixelNum);
+}

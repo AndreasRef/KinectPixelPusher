@@ -1,4 +1,5 @@
 class Button {
+  int index;
   int row;
   int column;
   int x, y;                 // The x- and y-coordinates
@@ -12,9 +13,10 @@ class Button {
   boolean pressed = false;  // True when the mouse/blob is over and pressed
   int state;
   long startTime = 0;
+  int blobIndex;
 
-  Button(int _row, int _column, int _x, int _y, float _w, float _h, color b, color o, color p) {
-
+  Button(int _index, int _row, int _column, int _x, int _y, float _w, float _h, color b, color o, color p) {
+    index = _index;
     row = _row;
     column = _column; 
     x = _x;
@@ -27,17 +29,21 @@ class Button {
   }
 
   // Updates the over field every frame
-  void update(float x, float y) {
+  void update(float x, float y, int _blobIndex) {
 
     float bX = x;
     float bY = y;
-
+    
+    
+    
 
     if ((bX >= this.x) && (bX <= this.x+w) && 
       (bY >= this.y) && (bY <= this.y+h)) {    
       over = true;
+      blobIndex = _blobIndex;
     } else {
       //over = false;
+      //blobIndex = 0;
     }
     state = int(pressed);
 
@@ -55,7 +61,7 @@ class Button {
     if (over == true && prevOver ==! over) {
      startTime = millis();
     }
-    if (over == true && millis() - startTime > 2000) {
+    if (over == true && millis() - startTime > autoPressTime) {
      pressed =! pressed;
      startTime = millis();
     }
@@ -91,7 +97,7 @@ class Button {
     textAlign(CENTER);
     textSize(10);
     fill(255, 0, 0);
-    text(row + " " + column + " " + state, x+w/2, y+h/2);
+    text(index + " " + row + " " + column + " " + state + " " + blobIndex, x+w/2, y+h/2);
     popStyle();
   }
 }
@@ -107,7 +113,8 @@ void setupButtons () {
   for (int i = 0; i < horizontalSteps; i++) { 
     for (int j = 0; j < verticalSteps; j++) {
       // Inputs: row, column, x, y, w, h , base color, over color, press color
-      buttons[index++] = new Button(i, j, i*abs(startX-endX)/horizontalSteps + startX, j*abs(startY-endY)/verticalSteps + startY, abs(startX-endX)/horizontalSteps, abs(startY-endY)/verticalSteps, color(122), color(255), color(0));
+      buttons[index] = new Button(index, i, j, i*abs(startX-endX)/horizontalSteps + startX, j*abs(startY-endY)/verticalSteps + startY, abs(startX-endX)/horizontalSteps, abs(startY-endY)/verticalSteps, color(122), color(255), color(0));
+      index ++;
       //buttons[index++] = new Button(i, j, i*1280/horizontalSteps , j*480/verticalSteps, 1280/horizontalSteps, 480/verticalSteps, color(122), color(255), color(0));
     }
   }

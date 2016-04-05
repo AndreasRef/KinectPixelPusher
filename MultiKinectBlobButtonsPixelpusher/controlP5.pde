@@ -50,9 +50,10 @@ void controlP5setup() {
     .setBackgroundColor(color(255, 50))
     ;
 
-  cp5.addToggle("autoPress").setPosition(160, 10).setSize(toogleWidth, toogleHeight/2).setGroup(ButtonControls).listen(true);
-  cp5.addToggle("mouseControl").setPosition(160, 40).setSize(toogleWidth, toogleHeight/2).setGroup(ButtonControls).listen(true);
-  cp5.addToggle("showButtons").setPosition(160, 70).setSize(toogleWidth, toogleHeight/2).setGroup(ButtonControls).listen(true);
+  cp5.addSlider("autoPressTime", 200, 2000).setCaptionLabel("autoTime").setPosition(160, 10).setSize(toogleWidth, toogleHeight/2).setGroup(ButtonControls);
+  cp5.addToggle("autoPress").setPosition(160, 30).setSize(toogleWidth, toogleHeight/2).setGroup(ButtonControls).listen(true);
+  cp5.addToggle("mouseControl").setPosition(160, 60).setSize(toogleWidth, toogleHeight/2).setGroup(ButtonControls).listen(true);
+  cp5.addToggle("showButtons").setPosition(160, 90).setSize(toogleWidth, toogleHeight/2).setGroup(ButtonControls).listen(true);
   cp5.addButton("clearSeq").setPosition(195, 120).setSize(toogleWidth, toogleHeight/2).setGroup(ButtonControls).setColorBackground(color(0, 100, 50)); 
   cp5.addSlider("horizontalSteps", 0, 10).setCaptionLabel("rows").setPosition(10, 10).setGroup(ButtonControls);
   cp5.addSlider("verticalSteps", 0, 10).setCaptionLabel("cols").setPosition(10, 30).setGroup(ButtonControls);
@@ -61,6 +62,8 @@ void controlP5setup() {
   cp5.addSlider("startY", 0, 240).setPosition(10, 80).setGroup(ButtonControls);
   cp5.addSlider("endX", 640, 1280).setPosition(10, 100).setGroup(ButtonControls);
   cp5.addSlider("endY", 240, 480).setPosition(10, 120).setGroup(ButtonControls);
+
+ 
 
   //PixelPusher GUI
   Group PixelPusherControls = cp5.addGroup("PixelPusherControls")
@@ -84,8 +87,10 @@ void controlP5setup() {
   
   
 
-  cp5.addSlider("fadeSpeed", 0, 100).setPosition(10, 120).setGroup(PixelPusherControls); //Not showing up??
-
+  cp5.addSlider("fadeInSpeed", 0, 50).setPosition(10, 120).setGroup(PixelPusherControls); 
+  cp5.addSlider("fadeOutSpeed", 0, 50).setPosition(170, 120).setGroup(PixelPusherControls); 
+  
+  
   cp5.addButton("clearLights").setPosition(350, 120).setSize(toogleWidth, toogleHeight/2).setGroup(PixelPusherControls).setColorBackground(color(0, 100, 50));
 
   //Settings GUI
