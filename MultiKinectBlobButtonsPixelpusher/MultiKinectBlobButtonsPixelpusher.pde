@@ -1,14 +1,13 @@
 //A tool that combines 2 Kinect depth images with blob detection to control LED's via the PixelPusher //<>//
-//Update 31/3: Fixed inverted sides. Added Screenshot + PixelPusher GUI. Fading doesn't work!!
 
 //Update 4/4: Added an index in the button class to make things easier, but actually not using it right now....??
 // Figured out fading using the fadePixel function. KinectImage is flipped (and is too heavy on the frameRate to flip in code) 
 // which is why I have a small hack using (2 - button.column)
 
-
 //Update 5/4: Autopress not working anymore? 
-//Experimenting with adding blobIndex to button class, so each person can have its own light...
+//Experimenting with adding blobIndex to button class, so each person can have its own color...
 // blob ID depends on X-position, which means that the blobs switch place... Pretty annoing....
+// Maybe there is another way to make the blob get an ID at "birth" that doesn´t change
 
 import org.openkinect.freenect.*;
 import org.openkinect.processing.*;
@@ -22,8 +21,6 @@ import com.heroicrobot.dropbit.devices.pixelpusher.Pixel;
 import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
 import java.util.*;
 
-
-//Pixelpusher
 DeviceRegistry registry;
 
 class TestObserver implements Observer {
@@ -188,15 +185,15 @@ void draw() {
 
     if (switchOrder) {
       if (i==0) {
-        pg.image(croppedDepthImage, croppedDepthImage.width*(1-i)+kinect0X, kinect0Y, croppedDepthImage.width, 480); //Be aware that this results in some empty (black) pixels all the way to the left
+        pg.image(croppedDepthImage, croppedDepthImage.width*(1-i)+kinect0X, kinect0Y, croppedDepthImage.width, 480); 
       } else if (i==1) {
-        pg.image(croppedDepthImage, croppedDepthImage.width*(1-i)+kinect1X, kinect1Y, croppedDepthImage.width, 480); //Be aware that this results in some empty (black) pixels all the way to the left
+        pg.image(croppedDepthImage, croppedDepthImage.width*(1-i)+kinect1X, kinect1Y, croppedDepthImage.width, 480); 
       }
     } else if (switchOrder == false) {
       if (i==0) {
-        pg.image(croppedDepthImage, croppedDepthImage.width*i+kinect0X, kinect0Y, croppedDepthImage.width, 480); //Be aware that this results in some empty (black) pixels all the way to the left
+        pg.image(croppedDepthImage, croppedDepthImage.width*i+kinect0X, kinect0Y, croppedDepthImage.width, 480); 
       } else if (i==1) {
-        pg.image(croppedDepthImage, croppedDepthImage.width*i+kinect1X, kinect1Y, croppedDepthImage.width, 480); //Be aware that this results in some empty (black) pixels all the way to the left
+        pg.image(croppedDepthImage, croppedDepthImage.width*i+kinect1X, kinect1Y, croppedDepthImage.width, 480); 
       }
       //pg.image(depthImg, 640*i, 0); //Full image without crop
     }
@@ -219,7 +216,7 @@ void draw() {
       Kinect tmpKinect = (Kinect)multiKinect.get(i);
 
       if (switchOrder) {
-        image(tmpKinect.getVideoImage(), 640*(1-i), 0);
+        image(tmpKinect.getVideoImage(), 640*(1-i), 0); 
       } else {
         image(tmpKinect.getVideoImage(), 640*i, 0);
       }
@@ -301,13 +298,13 @@ void draw() {
       for (int i = 0; i<strips.size()*sidesPerStrip; i++) {
         if (2 - button.column + button.row*3 == i && button.over) { //Fade in selected strip
           for (int j=pixelsPerSide*i; j<pixelsPerSide*(i+1); j++) {
-            //fadePixel(j, colorOptions[button.column], true, fadeInSpeed, 0);
-            fadePixel(j, colorOptions[button.blobIndex % 3], true, fadeInSpeed, 0); //Controlled by blob index
+            fadePixel(j, colorOptions[button.column], true, fadeInSpeed, 0);
+            //fadePixel(j, colorOptions[button.blobIndex % 3], true, fadeInSpeed, 0); //Controlled by blob index, so each blob has a unique color
           }
         } else if (2 - button.column + button.row*3 == i) { //Fade out all others
           for (int j=pixelsPerSide*i; j<pixelsPerSide*(i+1); j++) {
-            //fadePixel(j, colorOptions[button.column], false, fadeOutSpeed, 0);
-            fadePixel(j, colorOptions[button.blobIndex % 3], false, fadeOutSpeed, 0); //Controlled by blob index
+            fadePixel(j, colorOptions[button.column], false, fadeOutSpeed, 0);
+            //fadePixel(j, colorOptions[button.blobIndex % 3], false, fadeOutSpeed, 0); //Controlled by blob index, so each blob has a unique color
           }
         }
       }

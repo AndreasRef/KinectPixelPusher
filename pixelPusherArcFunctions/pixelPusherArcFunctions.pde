@@ -198,11 +198,11 @@ void draw() {
     for (int i = 0; i<strips.size()*sidesPerStrip; i++) {
       if (selectedSide == i) { //Fade in selected strip
         for (int j=pixelsPerSide*i; j<pixelsPerSide*(i+1); j++) {
-          fadePixel(j, color(#6ADDFF), true, 20, 10);
+          //fadePixel(j, color(#6ADDFF), true, 20, 10);
         }
       } else { //Fade out all others
         for (int j=pixelsPerSide*i; j<pixelsPerSide*(i+1); j++) {
-          fadePixel(j, color(#6ADDFF), false, 5, 10);
+          //fadePixel(j, color(#6ADDFF), false, 5, 10);
         }
       }
     }
@@ -210,10 +210,23 @@ void draw() {
     //fadeSides() function: fadeSide(int strip, int side, color c, boolean inOut, int fadeSpeed, int threshold) {
    // if (mousePressed) fadeSide(0, 1, color(#FF7A00), true, 1, 10);
     //if (keyPressed) fadeSide(0, 1, color(#FF7A00), false, 1, 0);
-
-
+    
+    
+// 5/4: Experiment with lerping colors    
+    lerpPixel(0, color(#6ADDFF), 1.0*mouseX/width);
+    
     ////////END OF EXAMPLES///////////////
   }
+}
+
+
+// 5/4: Experiment with lerping colors
+void lerpPixel(int pixel, color c, float amt) {
+  int strip = floor(pixel/(pixelsPerStrip));
+  int pixelNum = pixel % (pixelsPerStrip);
+  color lerp = lerpColor (color(#FF7A00), c, amt);
+  
+  strips.get(strip).setPixel(lerp, pixelNum);
 }
 
 
