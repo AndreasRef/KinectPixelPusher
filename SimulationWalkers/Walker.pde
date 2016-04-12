@@ -1,6 +1,5 @@
 class Walker {
   PVector location;
-  PVector noff;
   Walker(int x, int y) {
     location = new PVector(x, y);
   }

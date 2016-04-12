@@ -5,15 +5,10 @@ class Button {
   float w;                  // Width
   float h;                  // Height
   color baseGray;           // Default gray value 
-  color overGray;           // Value when mouse is over the button
-  color pressGray;          // Value when mouse is over and pressed
-  boolean over = false;     // True when the mouse is over 
-  boolean prevOver = false;
-  boolean pressed = false;  // True when the mouse is over and pressed
-  int state;
-  long startTime = 0;
+  color overGray;           // Color when something is over the button
+  boolean over = false;     // State when something is over the button
 
-  Button(int _row, int _column, int _x, int _y, float _w, float _h, color b, color o, color p) {
+  Button(int _row, int _column, int _x, int _y, float _w, float _h, color b, color o) {
 
     row = _row;
     column = _column; 
@@ -23,39 +18,20 @@ class Button {
     h = _h;
     baseGray = b;
     overGray = o;
-    pressGray = p;
   }
 
-  // Updates the over field every frame
   void update(float x, float y) {
 
     float bX = x;
     float bY = y;
 
-
-    if ((bX >= this.x) && (bX <= this.x+w) && 
-      (bY >= this.y) && (bY <= this.y+h)) {    
+    if ((bX >= this.x) && (bX <= this.x+w) && (bY >= this.y) && (bY <= this.y+h)) {    
       over = true;
-    } else {
-      //over = false;
-    }
-    state = int(pressed);
-  }
-
-  boolean press() {  
-    if (over == true) {
-      pressed =! pressed;
-      return true;
-    } else {
-      return false;
     }
   }
-
 
   void display() {
-    if (pressed == true) {
-      fill(pressGray, 100);
-    } else if (over == true) {
+    if (over == true) {
       fill(overGray, 100);
     } else {
       fill(baseGray, 100);
@@ -70,7 +46,7 @@ class Button {
     textAlign(CENTER);
     textSize(10);
     fill(255, 0, 0);
-    text(row + " " + column + " " + state, x+w/2, y+h/2);
+    text(row + " " + column + " " + int(over), x+w/2, y+h/2);
     popStyle();
-  }  
+  }
 }

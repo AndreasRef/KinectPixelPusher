@@ -6,8 +6,9 @@
 //Light is now in a class, but not connected to the Pixelpusher yet. 
 //Sound is connected to Ableton via Max for Live. Works well. Kinect is not connected yet. 
 
-//To do: 
-//Push to Github
+//April 12th:
+//Cleaned up button class so only the necessary stuff is included
+
 
 import controlP5.*;
 ControlP5 cp5;
@@ -41,8 +42,10 @@ int speed = 50;
 
 Light[] lights = new Light[horizontalSteps];
 
-color c1;
-color c2;
+color gradientStart;
+color gradientEnd;
+color currentBeatC;
+color triggerC;
 
 void setup() {
   size(1280, 800);
@@ -66,14 +69,17 @@ void setup() {
   cp5.addToggle("displayButtons").setPosition(200, height-25).setSize(50, 10);
   cp5.addToggle("whiteLights").setPosition(325, height-55).setSize(50, 10);
 
-  cp5.addColorWheel("c1", 400, height - 115, 100 ).setRGB(color(#71FFD6));
-  cp5.addColorWheel("c2", 520, height - 115, 100 ).setRGB(color(#FA0DFF));
+  cp5.addColorWheel("gradientStart", 400, height - 115, 100 ).setRGB(color(#71FFD6));
+  cp5.addColorWheel("gradientEnd", 520, height - 115, 100 ).setRGB(color(#FA0DFF));
+  
+  cp5.addColorWheel("currentBeatC", 650, height - 115, 100 ).setRGB(color(#08FFEC));
+  cp5.addColorWheel("triggerC", 770, height - 115, 100 ).setRGB(color(#FFFFFF));
+  
 
   setupButtons();
 
-  //lights
   for (int i=0; i<lights.length; i++) {
-    lights[i] = new Light(i, 255, 255, 255, false, false, color(#FC03C3)); //Pink
+    lights[i] = new Light(i, 255, 255, 255, color(#FC03C3)); //Pink
   }
 }
 
@@ -87,7 +93,6 @@ void draw() {
       Walker w = walkers.get(i);
       button.update(w.location.x, w.location.y);
     }
-    //if (autoPress) button.autoPress();
     if (displayButtons) button.display();
     if (displayNumbers) button.displayNumbers();
   }
@@ -126,65 +131,61 @@ void drawLights() {
 
   noStroke();
   for (int i = 0; i<lights.length; i++) {
-    lights[i].fillC = color(hue(lerpColor(c1, c2, abs(200 - (frameCount % 400))*0.005)), 75, 75);
-    
-    for (Button button : buttons) {
-        if (button.row == i && button.over) {
-        if (whiteLights) {
-          lights[i].fillC = color (#FFFFFF,120);
-          
-        } else {
-          lights[i].fillC = color (hue(lerpColor(c1, c2, abs(200 - (frameCount % 400))*0.005)), 255, 255);
-        }
-        
-        if (beatVal1 == i) {
-          lights[i].fillC = color (#FFFFFF); // White
+    lights[i].fillC = color(hue(lerpColor(gradientStart, gradientEnd, abs(200 - (frameCount % 400))*0.005)), 75, 75);
 
-        }
-      } else {
-      }
+    if (beatVal1 == i) {  
+      lights[i].fillC = currentBeatC; //current beat position color
     }
-    
+
+    for (Button button : buttons) {
+      if (button.row == i && button.over) { //color of rows/columns with people inside
+        if (whiteLights) {
+          lights[i].fillC = color (#FFFFFF, 120); //grey
+        } else {
+          lights[i].fillC = color (hue(lerpColor(gradientStart, gradientEnd, abs(200 - (frameCount % 400))*0.005)), 255, 255); //Lerp color full on
+        }
+        if (beatVal1 == i) {
+          lights[i].fillC = triggerC; //color of lights when they are trigged
+        }
+      } 
+    }
     lights[i].display();
-    
   }
 }
 
-  void controlEvent(ControlEvent theEvent) {
-    if (theEvent.isFrom(cp5.getController("horizontalSteps")) || theEvent.isFrom(cp5.getController("verticalSteps"))) {
-      setupButtons();
+void controlEvent(ControlEvent theEvent) {
+  if (theEvent.isFrom(cp5.getController("horizontalSteps")) || theEvent.isFrom(cp5.getController("verticalSteps"))) {
+    setupButtons();
+  }
+}
+
+
+void keyPressed() {
+  if (key == 'a') walkers.add(new Walker((int)random(width), (int)random(programHeight)+yOffset)); 
+  if (key == 'd' && walkers.size() > 0)  walkers.remove(0);
+}
+
+void setupButtons () {
+  count = horizontalSteps * verticalSteps;
+  buttons = new Button[count];
+
+  int index = 0;
+  for (int i = 0; i < horizontalSteps; i++) { 
+    for (int j = 0; j < verticalSteps; j++) {
+      buttons[index++] = new Button(i, j, i*1280/horizontalSteps, j*programHeight/verticalSteps+yOffset, 1280/horizontalSteps, 480/verticalSteps, color(122), color(255));
     }
   }
+}
 
 
-  void keyPressed() {
-    if (key == 'a') walkers.add(new Walker((int)random(width), (int)random(programHeight)+yOffset)); 
-    if (key == 'd' && walkers.size() > 0)  walkers.remove(0);
+void mousePressed() {
+  if (mouseY > yOffset && mouseY < yOffset + programHeight) {
+    walkers.add(new Walker(mouseX, mouseY));
   }
-
-  void setupButtons () {
-    count = horizontalSteps * verticalSteps;
-    buttons = new Button[count];
-
-    int index = 0;
-    for (int i = 0; i < horizontalSteps; i++) { 
-      for (int j = 0; j < verticalSteps; j++) {
-        // Inputs: row, column, x, y, w, h , base color, over color, press color
-        //buttons[index++] = new Button(i, j+yOffset, i*1280/horizontalSteps, j*programHeight/verticalSteps+yOffset, 1280/horizontalSteps, 480/verticalSteps, color(122), color(255), color(0));
-        buttons[index++] = new Button(i, j, i*1280/horizontalSteps, j*programHeight/verticalSteps+yOffset, 1280/horizontalSteps, 480/verticalSteps, color(122), color(255), color(0));
-      }
-    }
-  }
+}
 
 
-  void mousePressed() {
-    if (mouseY > yOffset && mouseY < yOffset + programHeight) {
-      walkers.add(new Walker(mouseX, mouseY));
-    }
-  }
-
-
-  public void beatPlug(int _beatVal1) {
-    beatVal1 = _beatVal1;
-    //println(_beatVal1);
-  }
+public void beatPlug(int _beatVal1) {
+  beatVal1 = _beatVal1;
+  //println(_beatVal1);
+}
