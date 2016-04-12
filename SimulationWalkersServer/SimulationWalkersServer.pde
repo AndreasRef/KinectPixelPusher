@@ -1,5 +1,5 @@
 //This sketch simulates people walking around in the tunnel and supports two computers communicating over wifi network
-
+//This part is the Server, which does the light animation and sends messages to max4Live
 
 import controlP5.*;
 ControlP5 cp5;
@@ -11,7 +11,6 @@ import netP5.*;
 import processing.net.*;
 Server server;
 
-float newMessageColor = 255;
 String incomingMessage = "";
 
 OscP5 oscP5;
@@ -25,7 +24,6 @@ Button[] buttons;
 boolean displayNumbers = true;
 boolean displayButtons = true;
 
-//boolean autoPress = false;
 boolean whiteLights = true;
 
 int programHeight = 480;
@@ -99,8 +97,6 @@ void draw() {
         button.update(w.location.x, w.location.y);
       }
 
-
-
       if (displayButtons) button.display();
       if (displayNumbers) button.displayNumbers();
     }
@@ -109,7 +105,6 @@ void draw() {
   //Cycle through the second half of the buttons
   for (Button button : buttons) {
     if (button.index >= 56) {
-
 
       if (displayButtons) button.display();
       if (displayNumbers) button.displayNumbers();
@@ -144,54 +139,29 @@ void draw() {
   drawLights();
   popStyle();
 
-
-  //Server
-
   serverRecieve(); //Also update from net communication
 }
 
 void serverRecieve() {
-
-  //Idea: it sends the ID of all the buttons where "over" is true. Those are turned on. All others are turned off. 
-
-  // The most recent incoming message is displayed in the window.
-  //text(incomingMessage, 880, height - 100); 
-
-  //println(incomingMessage);
-  // If a client is available, we will find out
-  // If there is no client, it will be"null"
   Client client = server.available();
-  // We should only proceed if the client is not null
   if (client != null) {
 
-    // Receive the message
-    // The message is read using readString().
     incomingMessage = client.readString(); 
-    // The trim() function is used to remove the extra line break that comes in with the message.
     incomingMessage = incomingMessage.trim();
 
     data = int(split(incomingMessage, " "));
-    //println(data);
 
-    if (data.length == 7*8) {
+    if (data.length == 7*8) { //This is necessary since the data sometimes is cut off, so not all values are sent
       for (int i = 0; i <7*8; i++)
         if (data[i] == 1) {
           buttons[i + 56].over = true;
         } else {
           buttons[i + 56].over = false;
         }
-        println("GOOD data length"); 
+        //println("GOOD data length"); 
     } else if (data.length >0) {
-     println(data.length); 
+     //println(data.length); 
     }
-
-
-    //for (int i = 0; i < data.length; i++) {     
-    //  if (data[i] == 1) buttons[i].over = true;
-    //}
-
-    // Print to Processing message window
-    //println("Client says: " + incomingMessage);
   }
 }
 
@@ -256,13 +226,10 @@ void mousePressed() {
 
 public void beatPlug(int _beatVal1) {
   beatVal1 = _beatVal1;
-  //println(_beatVal1);
 }
 
 // The serverEvent function is called whenever a new client connects.
 void serverEvent(Server server, Client client) {
   incomingMessage = "A new client has connected: " + client.ip();
   println(incomingMessage);
-  // Reset newMessageColor to black
-  newMessageColor = 0;
 }
