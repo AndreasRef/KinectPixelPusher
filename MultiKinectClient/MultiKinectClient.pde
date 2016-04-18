@@ -72,10 +72,12 @@ boolean autoPress = false;
 boolean mouseControl = true;
 boolean showButtons = true;
 
+PVector bCenterLerp; 
+
 void setup() {
   size(1280, 640);
   
-  frameRate(15); //Attempt to avoid jumpyness and communication errors...
+  frameRate(10); //Attempt to avoid jumpyness and communication errors...
 
   pg = createGraphics(1280, 480); 
   
@@ -110,6 +112,8 @@ void setup() {
 
   //Button
   setupButtons();
+  
+  bCenterLerp = new PVector(0.0,0.0);
 }
 
 void draw() {
@@ -191,11 +195,11 @@ void draw() {
         b=theBlobDetection.getBlob(n);
         
         //Make a vector for the center of the blob
-        //bCenter
+        PVector bCenter = new PVector (b.xMin*width/1 + b.w*width/2, b.yMin*programHeight + b.h*programHeight/2);
         
-        //Perhaps make a lerp function to smooth out values and avoid jumpiness
-
-        button.update(b.xMin*width/1 + b.w*width/2, b.yMin*programHeight + b.h*programHeight/2);
+        //Perhaps make a lerp function to smooth out values and avoid jumpiness?
+        button.update(bCenter.x, bCenter.y);
+        
       }
     }
     if (showButtons) { 

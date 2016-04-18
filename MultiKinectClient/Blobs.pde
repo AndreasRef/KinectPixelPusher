@@ -9,6 +9,7 @@ void drawBlobsAndEdges(boolean drawBlobs, boolean drawEdges, boolean blobInforma
   for (int n=0; n<theBlobDetection.getBlobNb(); n++)
   {
     b=theBlobDetection.getBlob(n);
+    PVector bCenter = new PVector (b.xMin*width/1 + b.w*width/2, b.yMin*programHeight + b.h*programHeight/2);
     if (b!=null)
     {
       // Edges
@@ -22,20 +23,21 @@ void drawBlobsAndEdges(boolean drawBlobs, boolean drawEdges, boolean blobInforma
           eB = b.getEdgeVertexB(m);
           if (eA !=null && eB !=null)
             line(
-              eA.x*width/1, eA.y*480, 
-              eB.x*width/1, eB.y*480
+              eA.x*width/1, eA.y*programHeight, 
+              eB.x*width/1, eB.y*programHeight
               );
         }
       }
-
+      
+      //Perhaps make a lerp function to smooth out values and avoid jumpiness?
       // Blobs
       if (drawBlobs)
       {
         strokeWeight(1);
         stroke(255, 0, 0);
         rect(
-          b.xMin*width/1, b.yMin*480, 
-          b.w*width/1, b.h*480
+          b.xMin*width/1, b.yMin*programHeight, 
+          b.w*width/1, b.h*programHeight
           );
       }
 
@@ -44,13 +46,11 @@ void drawBlobsAndEdges(boolean drawBlobs, boolean drawEdges, boolean blobInforma
         pushStyle();
         ellipseMode(CENTER);
         fill(0, 255, 0);
-        ellipse(b.xMin*width/1 + b.w*width/2, b.yMin*480 + b.h*480/2, 75, 75);
-
+        ellipse(bCenter.x, bCenter.y, 75, 75);
         textSize(50);
         textAlign(CENTER, CENTER);
         fill(255);
-        //text("#" + n + "\n (" + round(b.xMin*width/1 + b.w*width/2) +"," + round(b.yMin*480 + b.h*480/2) + ")", b.xMin*width/1 + b.w*width/2, b.yMin*480 + b.h*480/2);
-        text(n, b.xMin*width/1 + b.w*width/2, b.yMin*480 + b.h*480/2);
+        text(n, bCenter.x, bCenter.y);
         popStyle();
       }
     }
@@ -60,7 +60,7 @@ void drawBlobsAndEdges(boolean drawBlobs, boolean drawEdges, boolean blobInforma
 boolean newBlobDetectedEvent(Blob b) // Filtering blobs (discard "little" ones)
 {
   int w = (int)(b.w * width);
-  int h = (int)(b.h * 480);
+  int h = (int)(b.h * programHeight);
   if (w >= minimumBlobSize || h >= minimumBlobSize) {
     return true;
   } else {
