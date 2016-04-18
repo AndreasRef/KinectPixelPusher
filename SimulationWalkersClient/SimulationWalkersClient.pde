@@ -27,17 +27,12 @@ ArrayList<Walker> walkers;
 int yOffset = 100;
 int speed = 50;
 
-color gradientStart;
-color gradientEnd;
-color currentBeatC;
-color triggerC;
-
 void setup() {
   size(1280, 800);
   
   frameRate(30);
   
-  client = new Client(this, "192.168.10.118", 5204);
+  client = new Client(this, "192.168.10.124", 5204); //The ip address is subject to change, so make sure you have it right every time you start up the program. 
 
   walkers = new ArrayList<Walker>();
 
