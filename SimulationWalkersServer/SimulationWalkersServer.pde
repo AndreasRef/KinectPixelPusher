@@ -158,9 +158,9 @@ void serverRecieve() {
         } else {
           buttons[i + 56].over = false;
         }
-        //println("GOOD data length"); 
+        println("GOOD data length"); 
     } else if (data.length >0) {
-     //println(data.length); 
+     println(data.length); 
     }
   }
 }
