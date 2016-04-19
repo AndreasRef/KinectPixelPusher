@@ -77,11 +77,11 @@ PVector bCenterLerp;
 void setup() {
   size(1280, 640);
   
-  frameRate(10); //Attempt to avoid jumpyness and communication errors...
+  frameRate(10); //Attempt to avoid jumpyness and communication errors... 
 
   pg = createGraphics(1280, 480); 
   
-  client = new Client(this, "192.168.10.124", 5204); //The ip address is subject to change, so make sure you have it right every time you start up the program.
+  client = new Client(this, "192.168.10.120", 5205); //The ip address is subject to change, so make sure you have it right every time you start up the program.
 
   numDevices = Kinect.countDevices();
   println("number of Kinect v1 devices  "+numDevices);
