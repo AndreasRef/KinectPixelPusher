@@ -1,6 +1,9 @@
 //This sketch simulates people walking around in the tunnel and supports two computers communicating over wifi network
 //This part is the Server, which does the light animation and sends messages to max4Live
 
+//Update April 19th: Integrated with Arduino, so touching the tubes triggers chime sound and lights up the tubes (in the simulation)
+////Note that pins 0, 1 and 13 are not accessible from the Arduino, so you need to recalculate the values comming from the Arduino!
+
 import controlP5.*;
 ControlP5 cp5;
 
@@ -10,6 +13,15 @@ import netP5.*;
 //Server
 import processing.net.*;
 Server server;
+
+//Arduino Serial
+import processing.serial.*;
+Serial myPort;
+int serialCounter = 0;
+int lastSerialCounter =0;
+
+int triggerValue = -1;
+
 
 String incomingMessage = "";
 
@@ -45,8 +57,18 @@ color triggerC;
 
 int data[];
 
+int[] cMinor = {72, 74, 75, 77, 79, 80, 82, 84, 86, 87, 89, 91, 92, 94, 96, 98, 99, 101, 103, 104, 106, 108, 110, 11, 113, 115, 116, 118};
+
+boolean vibrationTrigged = false;
+long vibrationTimer = 0;
+
 void setup() {
   size(1280, 800);
+  println(Serial.list());
+
+  myPort = new Serial(this, Serial.list()[1], 9600);
+  myPort.bufferUntil('\n');
+
   walkers = new ArrayList<Walker>();
 
   oscP5 = new OscP5(this, 5002); // Listen for incoming messages at port 5002
@@ -138,6 +160,22 @@ void draw() {
   colorMode(HSB, 255);
   drawLights();
   popStyle();
+  
+  
+  if (lastSerialCounter == serialCounter) {
+    // Do nothing
+  } else {
+    trigFunction();
+  }
+  lastSerialCounter = serialCounter;
+  
+  if (vibrationTimer < 5000) {
+  vibrationTimer++;
+  }
+  
+  if (vibrationTimer > 100) {
+    vibrationTrigged = false;
+  } 
 
   serverRecieve(); //Also update from net communication
 }
@@ -158,9 +196,9 @@ void serverRecieve() {
         } else {
           buttons[i + 56].over = false;
         }
-        println("GOOD data length"); 
+      println("GOOD data length");
     } else if (data.length >0) {
-     println(data.length); 
+      println(data.length);
     }
   }
 }
@@ -169,7 +207,7 @@ void drawLights() {
 
   noStroke();
   for (int i = 0; i<lights.length; i++) {
-    lights[i].fillC = color(hue(lerpColor(gradientStart, gradientEnd, abs(200 - (frameCount % 400))*0.005)), 75, 75);
+     lights[i].fillC = color(hue(lerpColor(gradientStart, gradientEnd, abs(200 - (frameCount % 400))*0.005)), 75, 75);
 
     if (beatVal1 == i) {  
       lights[i].fillC = currentBeatC; //current beat position color
@@ -185,8 +223,15 @@ void drawLights() {
         if (beatVal1 == i) {
           lights[i].fillC = triggerC; //color of lights when they are trigged
         }
+
       }
     }
+    
+    //Test with Arduino inputs
+
+     if (triggerValue > -1 && vibrationTrigged == true) { //Small hack to avoid arrayOutOfBounds error when starting up
+     lights[triggerValue-2].fillC = color (hue(lerpColor(gradientStart, gradientEnd, abs(200 - (frameCount % 400))*0.005)), 255, 255); //Lerp color full on
+     }
     lights[i].display();
   }
 }
@@ -232,4 +277,37 @@ public void beatPlug(int _beatVal1) {
 void serverEvent(Server server, Client client) {
   incomingMessage = "A new client has connected: " + client.ip();
   println(incomingMessage);
+}
+
+
+void serialEvent(Serial thisPort) {
+  String inputString = thisPort.readStringUntil('\n');
+  inputString = trim(inputString);
+  triggerValue = int(inputString);
+
+  serialCounter++;
+  
+  vibrationTrigged = true;
+  vibrationTimer = 0;
+  
+}
+
+void trigFunction() {
+  
+  println("New trig revieced from input " + triggerValue);
+  println("Total trigs recieved " + serialCounter);
+  println();
+
+  //int midiNote = int(random(65, 80));
+  int midiNote = cMinor[triggerValue-2]; 
+
+  OscMessage myMessage = new OscMessage("/note");
+  myMessage.add(midiNote); 
+  myMessage.add(122); 
+  oscP5.send(myMessage, myRemoteLocation); 
+
+  OscMessage myMessageOff = new OscMessage("/note");
+  myMessageOff.add(midiNote); 
+  myMessageOff.add(0); 
+  oscP5.send(myMessageOff, myRemoteLocation);
 }
